@@ -25,6 +25,35 @@ static retro_input_state_t input_state_cb;
 static struct retro_log_callback logging;
 static retro_log_printf_t log_cb;
 
+EmulatorState agbemu;
+
+byte color_lookup[32];
+byte color_lookup_filter[32];
+
+void init_color_lookups() {
+    for (int i = 0; i < 32; i++) {
+        float c = (float) i / 31;
+        color_lookup[i] = c * 255;
+        color_lookup_filter[i] = pow(c, 1.7) * 255;
+    }
+}
+
+void gba_convert_screen(hword* gba_screen, Uint32* screen) {
+    for (int i = 0; i < GBA_SCREEN_W * GBA_SCREEN_H; i++) {
+        int r = gba_screen[i] & 0x1f;
+        int g = (gba_screen[i] >> 5) & 0x1f;
+        int b = (gba_screen[i] >> 10) & 0x1f;
+        if (agbemu.filter) {
+            screen[i] = color_lookup_filter[r] << 16 |
+                        color_lookup_filter[g] << 8 |
+                        color_lookup_filter[b] << 0;
+        } else {
+            screen[i] = color_lookup[r] << 16 | color_lookup[g] << 8 |
+                        color_lookup[b] << 0;
+        }
+    }
+}
+
 static char* system_path;
 static char* saves_path;
 
@@ -228,7 +257,7 @@ static void check_config_variables()
 
 void retro_get_system_info(struct retro_system_info* info)
 {
-  info->need_fullpath = false;
+  info->need_fullpath = true;
   info->valid_extensions = "gba";
   info->library_version = VERSION;
   info->library_name = "agbemu";
