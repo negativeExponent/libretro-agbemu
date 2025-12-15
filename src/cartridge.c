@@ -32,12 +32,12 @@ Cartridge* create_cartridge(char* filename) {
     cart->eeprom_mask = 0;
 
     for (int i = 0; i < cart->rom_size >> 2; i++) {
-        if (!strncmp((void*) &cart->rom.w[i], "SRAM_V", 6)) {
+        if (!strncmp((void*) &cart->rom.w[i], "SRAM_", 5)) {
             cart->sav_type = SAV_SRAM;
             cart->sav_size = SRAM_SIZE;
             break;
         }
-        if (!strncmp((void*) &cart->rom.w[i], "EEPROM_V", 8)) {
+        if (!strncmp((void*) &cart->rom.w[i], "EEPROM_", 7)) {
             cart->sav_type = SAV_EEPROM;
             cart->big_eeprom = true;
             cart->sav_size = EEPROM_SIZE_L;
@@ -50,21 +50,21 @@ Cartridge* create_cartridge(char* filename) {
             cart->eeprom_addr_len = 14;
             break;
         }
-        if (!strncmp((void*) &cart->rom.w[i], "FLASH_V", 7)) {
+        if (!strncmp((void*) &cart->rom.w[i], "FLASH_", 6)) {
             cart->sav_type = SAV_FLASH;
             cart->big_flash = false;
             cart->sav_size = FLASH_BK_SIZE;
             cart->flash_code = 0xd4bf;
             break;
         }
-        if (!strncmp((void*) &cart->rom.w[i], "FLASH512_V", 10)) {
+        if (!strncmp((void*) &cart->rom.w[i], "FLASH512_", 9)) {
             cart->sav_type = SAV_FLASH;
             cart->big_flash = false;
             cart->sav_size = FLASH_BK_SIZE;
             cart->flash_code = 0xd4bf;
             break;
         }
-        if (!strncmp((void*) &cart->rom.w[i], "FLASH1M_V", 9)) {
+        if (!strncmp((void*) &cart->rom.w[i], "FLASH1M_", 8)) {
             cart->sav_type = SAV_FLASH;
             cart->big_flash = true;
             cart->sav_size = FLASH_BK_SIZE * 2;
