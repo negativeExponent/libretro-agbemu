@@ -265,3 +265,31 @@ void cart_write_eeprom(Cartridge* cart, hword h) {
             break;
     }
 }
+
+void cart_info(Cartridge *cart) {
+    const char *SaveTypeNames[4] = { "none", "sram", "flash", "eeprom" };
+    uint8_t buffer[15];
+    int i = 0;
+
+    buffer[0] = 0;
+    for (i = 0; i < 12; i++) {
+        if (cart->rom.b[0xa0 + i] == 0)
+            break;
+        buffer[i] = cart->rom.b[0xa0 + i];
+    }
+
+    buffer[i] = 0;
+    printf("rom             : %s\n", cart->rom_filename);
+    printf("save            : %s\n", cart->sav_filename);
+    #ifndef __LIBRETRO__
+    printf("state           : %s\n", cart->sst_filename);
+    #endif
+
+    printf("Game Title      : %s\n", buffer);
+    memcpy(buffer, &cart->rom.b[0xac], 4);
+    buffer[4] = 0;
+    printf("Game Code       : %s\n", buffer);
+    printf("romSize         : %dKB\n", (cart->rom_size + 1023) / 1024);
+    printf("saveType        : %s\n", SaveTypeNames[cart->sav_type]);
+    printf("saveSize        : %d\n", cart->sav_size);
+}

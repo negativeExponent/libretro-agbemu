@@ -32,6 +32,8 @@ int main(int argc, char** argv) {
 
     if (emulator_init(argc, argv) < 0) return -1;
 
+    cart_info(agbemu.cart);
+
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_GAMECONTROLLER);
 
     SDL_GameController* controller = NULL;

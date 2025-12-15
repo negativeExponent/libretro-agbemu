@@ -391,6 +391,8 @@ bool retro_load_game(const struct retro_game_info* info)
   agbemu.running = true;
   agbemu.debugger = false;
 
+  cart_info(agbemu.cart);
+
   return true;
 }
 

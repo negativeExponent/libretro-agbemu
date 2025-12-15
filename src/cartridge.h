@@ -82,4 +82,6 @@ void cart_set_eeprom_size(Cartridge* cart, bool big_eeprom);
 hword cart_read_eeprom(Cartridge* cart);
 void cart_write_eeprom(Cartridge* cart, hword h);
 
+void cart_info(Cartridge* cart);
+
 #endif
