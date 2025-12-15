@@ -28,14 +28,20 @@ int emulator_init(int argc, char** argv) {
     agbemu.gba = malloc(sizeof *agbemu.gba);
     agbemu.cart = create_cartridge(agbemu.romfile);
     if (!agbemu.cart) {
-        free(agbemu.gba);
+        if (agbemu.gba != NULL) {
+            free(agbemu.gba);
+            agbemu.gba = NULL;
+        }
         printf("Invalid rom file\n");
         return -1;
     }
 
     agbemu.bios = load_bios(agbemu.biosfile);
     if (!agbemu.bios) {
-        free(agbemu.gba);
+        if (agbemu.gba != NULL) {
+            free(agbemu.gba);
+            agbemu.gba = NULL;
+        }
         destroy_cartridge(agbemu.cart);
         printf("Invalid or missing bios file.\n");
         return -1;
@@ -54,8 +60,14 @@ int emulator_init(int argc, char** argv) {
 
 void emulator_quit() {
     destroy_cartridge(agbemu.cart);
-    free(agbemu.bios);
-    free(agbemu.gba);
+    if (agbemu.bios != NULL) {
+        free(agbemu.bios);
+        agbemu.bios = NULL;
+    }
+    if (agbemu.gba != NULL) {
+        free(agbemu.gba);
+        agbemu.gba = NULL;
+    }
 }
 
 void read_args(int argc, char** argv) {

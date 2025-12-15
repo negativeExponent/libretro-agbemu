@@ -166,7 +166,10 @@ static bool fetch_variable_bool(const char* key, bool def)
   char* result = fetch_variable(key, def ? "enabled" : "disabled");
   bool is_enabled = strcmp(result, "enabled") == 0;
 
-  free(result);
+  if (result != NULL) {
+    free(result);
+    result = NULL;
+  }
   return is_enabled;
 }
 
@@ -346,7 +349,10 @@ bool retro_load_game(const struct retro_game_info* info)
 
   if (!agbemu.cart)
   {
-    free(agbemu.gba);
+    if (agbemu.gba != NULL) {
+      free(agbemu.gba);
+      agbemu.gba = NULL;
+    }
     log_cb(RETRO_LOG_ERROR, "Invalid rom file");
 
     return false;
@@ -356,7 +362,10 @@ bool retro_load_game(const struct retro_game_info* info)
 
   if (!agbemu.bios)
   {
-    free(agbemu.gba);
+    if (agbemu.gba != NULL) {
+      free(agbemu.gba);
+      agbemu.gba = NULL;
+    }
     destroy_cartridge(agbemu.cart);
     log_cb(RETRO_LOG_ERROR, "Invalid or missing bios file.");
 
@@ -385,8 +394,14 @@ bool retro_load_game_special(unsigned type, const struct retro_game_info* info, 
 void retro_unload_game(void)
 {
   destroy_cartridge(agbemu.cart);
-  free(agbemu.bios);
-  free(agbemu.gba);
+  if (agbemu.bios != NULL) {
+    free(agbemu.bios);
+    agbemu.bios = NULL;
+  }
+  if (agbemu.gba != NULL) {
+    free(agbemu.gba);
+    agbemu.gba = NULL;
+  }
 }
 
 void retro_reset(void)

@@ -108,15 +108,33 @@ void destroy_cartridge(Cartridge* cart) {
             fwrite(cart->sram, 1, cart->sav_size, fp);
             fclose(fp);
         }
-        free(cart->sram);
+        if (cart->sram != NULL) {
+            free(cart->sram);
+            cart->sram = NULL;
+        }
     }
 
-    free(cart->rom_filename);
-    free(cart->sav_filename);
-    free(cart->sst_filename);
+    if (cart->rom_filename != NULL) {
+        free(cart->rom_filename);
+        cart->rom_filename = NULL;
+    }
+    if (cart->sav_filename != NULL) {
+        free(cart->sav_filename);
+        cart->sav_filename = NULL;
+    }
+    if (cart->sst_filename != NULL) {
+        free(cart->sst_filename);
+        cart->sst_filename = NULL;
+    }
 
-    free(cart->rom.b);
-    free(cart);
+    if (cart->rom.b != NULL) {
+        free(cart->rom.b);
+        cart->rom.b = NULL;
+    }
+    if (cart != NULL) {
+        free(cart);
+        cart = NULL;
+    }
 }
 
 byte cart_read_sram(Cartridge* cart, hword addr) {
