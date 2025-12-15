@@ -55,6 +55,9 @@ int emulator_init(int argc, char** argv) {
     agbemu.romfilenodir = strrchr(agbemu.romfile, '/');
     if (agbemu.romfilenodir) agbemu.romfilenodir++;
     else agbemu.romfilenodir = agbemu.romfile;
+
+    cart_info(agbemu.cart);
+
     return 0;
 }
 
