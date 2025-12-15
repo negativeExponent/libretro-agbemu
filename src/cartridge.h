@@ -18,9 +18,9 @@ enum {
 
 typedef struct {
 
-    char* rom_filename;
-    char* sav_filename;
-    char* sst_filename;
+    char rom_filename[2048];
+    char sav_filename[2048];
+    char sst_filename[2048];
 
     union {
         byte* b;

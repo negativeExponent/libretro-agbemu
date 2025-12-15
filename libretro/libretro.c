@@ -54,52 +54,43 @@ void gba_convert_screen(hword* gba_screen, Uint32* screen) {
     }
 }
 
-static char* system_path;
-static char* saves_path;
+static char system_path[2048];
+static char saves_path[2048];
 
-static char* game_path;
-static char* save_path;
+static char game_path[2048];
+static char save_path[2048];
 
-static char* concat(const char *s1, const char *s2)
+static void concat(char* dest, int dsize, const char *s1, const char *s2)
 {
-  char *result = malloc(strlen(s1) + strlen(s2) + 1);
-  strcpy(result, s1);
-  strcat(result, s2);
-  return result;
+  snprintf(dest, dsize - 1, "%s%s", s1, s2);
 }
 
-static char* normalize_path(const char* path, bool add_slash)
+static void normalize_path(char* dest, int dsize, const char* path, bool add_slash)
 {
-  char *new_path = malloc(strlen(path) + 1);
-  strcpy(new_path, path);
+  strcpy(dest, path);
 
-  if (add_slash && new_path[strlen(new_path) - 1] != '/')
-    strcat(new_path, "/");
+  if (add_slash && dest[strlen(dest) - 1] != '/')
+    strcat(dest, "/");
 
 #ifdef WINDOWS
-  for (char* p = new_path; *p; p++)
+  for (char* p = dest; *p; p++)
     if (*p == '\\') *p = '/';
 #endif
-
-  return new_path;
 }
 
-static char* get_name_from_path(const char* path)
+static void get_name_from_path(char* dest, int dsize, const char* path)
 {
-  char *base = malloc(strlen(path) + 1);
-  strcpy(base, strrchr(path, '/') + 1);
+  strcpy(dest, strrchr(path, '/') + 1);
 
   char* delims[] = { ".zip#", ".7z#", ".apk#" };
   for (int i = 0; i < 3; i++)
   {
-    char* delim_pos = strstr(base, delims[i]);
+    char* delim_pos = strstr(dest, delims[i]);
     if (delim_pos) *delim_pos = '\0';
   }
 
-  char* ext = strrchr(base, '.');
+  char* ext = strrchr(dest, '.');
   if (ext) *ext = '\0';
-
-  return base;
 }
 
 static void log_fallback(enum retro_log_level level, const char *fmt, ...)
@@ -125,7 +116,7 @@ static void reverse_eeprom_bytes(dword* eeprom, int size)
 
 static void load_save_file(Cartridge* cart, char* sav_filename)
 {
-  cart->sav_filename = sav_filename;
+  strcpy(cart->sav_filename, sav_filename);
   if (!cart->sav_size) return;
 
   cart->sram = malloc(cart->sav_size);
@@ -318,9 +309,14 @@ void retro_init(void)
     log_cb = logging.log;
   else
     log_cb = log_fallback;
+  
+  char tmp[2048];
 
-  system_path = normalize_path(get_system_dir(), true);
-  saves_path = normalize_path(get_save_dir(), true);
+  normalize_path(tmp, sizeof(tmp), get_system_dir(), true);
+  snprintf(system_path, sizeof(system_path), "%s", tmp);
+
+  normalize_path(tmp, sizeof(tmp), get_save_dir(), true);
+  snprintf(saves_path, sizeof(system_path), "%s", tmp);
 }
 
 void retro_deinit(void)
@@ -330,11 +326,21 @@ void retro_deinit(void)
 
 bool retro_load_game(const struct retro_game_info* info)
 {
-  const char* name = get_name_from_path(info->path);
-  const char* save = concat(name, ".sav");
+  char name[2048];
+  char save[2048];
 
-  game_path = normalize_path(info->path, false);
-  save_path = normalize_path(concat(saves_path, save), false);
+  get_name_from_path(name, sizeof(name), info->path);
+  concat(save, sizeof(save), name, ".sav");
+
+  char tmp[2048];
+
+  normalize_path(tmp, sizeof(tmp), info->path, false);
+  snprintf(game_path, sizeof(game_path), "%s", tmp);
+
+  char p[2048];
+  concat(p, sizeof(p), saves_path, save);
+  normalize_path(tmp, sizeof(tmp), p, false);
+  snprintf(save_path, sizeof(save_path), "%s", tmp);
 
   init_config();
   init_input();
@@ -342,7 +348,9 @@ bool retro_load_game(const struct retro_game_info* info)
   update_config();
 
   agbemu.romfile = game_path;
-  agbemu.biosfile = concat(system_path, "gba_bios.bin");
+
+  char biosfile[2048];
+  concat(biosfile, sizeof(biosfile), system_path, "gba_bios.bin");
 
   agbemu.gba = (GBA*)malloc(sizeof *agbemu.gba);
   agbemu.cart = create_cartridge(agbemu.romfile);
@@ -358,7 +366,7 @@ bool retro_load_game(const struct retro_game_info* info)
     return false;
   }
 
-  agbemu.bios = load_bios(agbemu.biosfile);
+  agbemu.bios = load_bios(biosfile);
 
   if (!agbemu.bios)
   {
