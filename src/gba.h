@@ -5,6 +5,7 @@
 #include "arm7tdmi.h"
 #include "cartridge.h"
 #include "dma.h"
+#include "gpio.h"
 #include "io.h"
 #include "ppu.h"
 #include "scheduler.h"
@@ -50,6 +51,8 @@ typedef struct _GBA {
     Scheduler sched;
 
     Cartridge* cart;
+
+    GPIO gpio;
 
     int cart_n_waits[4];
     int cart_s_waits[3];
@@ -102,7 +105,6 @@ typedef struct _GBA {
 
     int bus_locks;
     bool openbus;
-
 } GBA;
 
 void gba_clear_ptrs(GBA* gba);

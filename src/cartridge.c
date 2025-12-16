@@ -30,12 +30,12 @@ Cartridge* create_cartridge(char* filename) {
     cart->sav_type = SAV_NONE;
     cart->sav_size = 0;
     cart->eeprom_mask = 0;
+    cart->has_rtc = false;
 
     for (int i = 0; i < cart->rom_size >> 2; i++) {
         if (!strncmp((void*) &cart->rom.w[i], "SRAM_", 5)) {
             cart->sav_type = SAV_SRAM;
             cart->sav_size = SRAM_SIZE;
-            break;
         }
         if (!strncmp((void*) &cart->rom.w[i], "EEPROM_", 7)) {
             cart->sav_type = SAV_EEPROM;
@@ -48,28 +48,27 @@ Cartridge* create_cartridge(char* filename) {
             }
             cart->eeprom_size_set = false;
             cart->eeprom_addr_len = 14;
-            break;
         }
         if (!strncmp((void*) &cart->rom.w[i], "FLASH_", 6)) {
             cart->sav_type = SAV_FLASH;
             cart->big_flash = false;
             cart->sav_size = FLASH_BK_SIZE;
             cart->flash_code = 0xd4bf;
-            break;
         }
         if (!strncmp((void*) &cart->rom.w[i], "FLASH512_", 9)) {
             cart->sav_type = SAV_FLASH;
             cart->big_flash = false;
             cart->sav_size = FLASH_BK_SIZE;
             cart->flash_code = 0xd4bf;
-            break;
         }
         if (!strncmp((void*) &cart->rom.w[i], "FLASH1M_", 8)) {
             cart->sav_type = SAV_FLASH;
             cart->big_flash = true;
             cart->sav_size = FLASH_BK_SIZE * 2;
             cart->flash_code = 0x1362;
-            break;
+        }
+        if (!strncmp((void*) &cart->rom.w[i], "SIIRTC_", 7)) {
+            cart->has_rtc = true;
         }
     }
 
@@ -292,4 +291,5 @@ void cart_info(Cartridge *cart) {
     printf("romSize         : %dKB\n", (cart->rom_size + 1023) / 1024);
     printf("saveType        : %s\n", SaveTypeNames[cart->sav_type]);
     printf("saveSize        : %d\n", cart->sav_size);
+    printf("hasRTC          : %s\n", cart->has_rtc ? "true" : "false");
 }

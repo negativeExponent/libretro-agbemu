@@ -12,6 +12,7 @@
 #include "scheduler.h"
 #include "timer.h"
 #include "types.h"
+#include "gpio.h"
 
 const int CART_WAITS[4] = {5, 4, 3, 9};
 
@@ -72,6 +73,8 @@ void init_gba(GBA* gba, Cartridge* cart, byte* bios, bool bootbios) {
     } else {
         cpu_handle_interrupt(&gba->cpu, I_RESET);
     }
+
+    gpio_init(&gba->gpio);
 }
 
 byte* load_bios(char* filename) {
@@ -297,6 +300,9 @@ hword bus_readh(GBA* gba, word addr) {
                 (rom_addr & gba->cart->eeprom_mask) == gba->cart->eeprom_mask) {
                 return cart_read_eeprom(gba->cart);
             }
+            if (gba->cart->has_rtc && (addr >= 0x000000c4 && addr < 0x000000ca)) {
+                return gpio_read_halfword(&gba->gpio, addr & 0x1fffffe);
+            }
             if (rom_addr < gba->cart->rom_size) {
                 return gba->cart->rom.h[rom_addr >> 1];
             } else return read_rom_oob(addr & ~1);
@@ -413,6 +419,7 @@ void bus_writeb(GBA* gba, word addr, byte b) {
             if (gba->cart->eeprom_mask &&
                 (rom_addr & gba->cart->eeprom_mask) == gba->cart->eeprom_mask) {
                 cart_write_eeprom(gba->cart, b);
+                break;
             }
             break;
         case R_SRAM:
@@ -462,6 +469,11 @@ void bus_writeh(GBA* gba, word addr, hword h) {
             if (gba->cart->eeprom_mask &&
                 (rom_addr & gba->cart->eeprom_mask) == gba->cart->eeprom_mask) {
                 cart_write_eeprom(gba->cart, h);
+                break;
+            }
+            if (gba->cart->has_rtc && (addr >= 0x000000c4 && addr < 0x000000ca)) {
+                gpio_write_halfword(&gba->gpio, addr & 0x1fffffe, h);
+                break;
             }
             break;
         case R_SRAM:

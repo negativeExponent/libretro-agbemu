@@ -50,6 +50,7 @@ SRCS := \
 	$(SRC_DIR)/debugger.c \
 	$(SRC_DIR)/dma.c \
 	$(SRC_DIR)/gba.c \
+	$(SRC_DIR)/gpio.c \
 	$(SRC_DIR)/io.c \
 	$(SRC_DIR)/ppu.c \
 	$(SRC_DIR)/scheduler.c \

@@ -22,6 +22,9 @@ typedef struct {
     char sav_filename[2048];
     char sst_filename[2048];
 
+    // sensors / gpio device
+    bool has_rtc;
+
     union {
         byte* b;
         hword* h;
